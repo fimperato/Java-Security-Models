@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security.xsd">
+	
+	<!--  http://consistentcoder.com/spring-security-4-xml-config-in-memory-authentication-annotation-security-method 
+    <http auto-config="true">
+        <form-login />
+        <logout invalidate-session="true" />
+    </http>
+    
+    <authentication-manager>
+        <authentication-provider>
+            <user-service>
+                <user name="admin" password="admin" authorities="ROLE_ADMIN" />
+                <user name="member" password="member" authorities="ROLE_MEMBER" />
+            </user-service>
+        </authentication-provider>
+    </authentication-manager> -->
+	
+	<global-method-security pre-post-annotations="enabled" />  
+    
+    <http pattern="/rest/login" security="none"/>   
+    <http pattern="/rest/signup" security="none"/>
+
+    <http  pattern="/rest/**" entry-point-ref="restAuthenticationEntryPoint" 
+    	create-session="stateless"> 
+        <custom-filter before="FORM_LOGIN_FILTER" ref="appAuthenticationFilter"/>
+    </http>
+        
+    <authentication-manager alias="authenticationManager">
+        <authentication-provider ref="appAuthenticationProvider" /> 
+    </authentication-manager> 
+    
+    <beans:bean id="appAuthenticationProvider"
+            class="it.imperato.service.security.filter.AppAuthenticationProvider">
+    </beans:bean>
+    
+    <beans:bean id="appAuthenticationSuccessHandler"
+            class="it.imperato.service.security.filter.AppAuthenticationSuccessHandler">
+    </beans:bean>
+    
+    <beans:bean id="restAuthenticationEntryPoint"
+            class="it.imperato.service.security.filter.RestAuthenticationEntryPoint">     
+    </beans:bean>
+    
+    <beans:bean id="appAuthenticationFilter" class="it.imperato.service.security.filter.AppAuthenticationFilter">  
+	     <beans:property name="authenticationManager" ref="authenticationManager" />
+	     <beans:property name="authenticationSuccessHandler" ref="appAuthenticationSuccessHandler" />  
+	</beans:bean>
+	
+	<!-- In the old days we used MD5 Md5PasswordEncoder or SHA ShaPasswordEncoder hashing algorithm to encode a password --> 
+	<!-- you are still allowed to use whatever encoder you like, but Spring recommends to use BCrypt BCryptPasswordEncoder, 
+		a stronger hashing algorithm with randomly generated salt. -->
+	<beans:bean id="passwordEncoder"
+		class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
+		<beans:constructor-arg name="strength" value="11" />
+  	</beans:bean>
+	
+	<!-- first: https://www.mkyong.com/spring-security/spring-security-hello-world-example/  -->
+</beans:beans>

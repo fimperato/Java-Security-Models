@@ -1,0 +1,33 @@
+{
+	"variables": [],
+	"info": {
+		"name": "SecurityWays",
+		"_postman_id": "62a5ddfd-634d-50f4-3e6b-250ecc0b0cd2",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "SpringCustomAuthFilter/rest/myservice/list",
+			"request": {
+				"url": "http://localhost:8080/SpringCustomAuthFilter/rest/myservice/list",
+				"method": "GET",
+				"header": [
+					{
+						"key": "username",
+						"value": "myuser",
+						"description": ""
+					},
+					{
+						"key": "password",
+						"value": "password",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
