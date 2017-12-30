@@ -1,44 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans:beans xmlns="http://www.springframework.org/schema/security"
+<beans:beans xmlns:sec="http://www.springframework.org/schema/security"
     xmlns:beans="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
         http://www.springframework.org/schema/security
-        http://www.springframework.org/schema/security/spring-security.xsd">
+        http://www.springframework.org/schema/security/spring-security-4.2.xsd">
 	
 	<!--  http://consistentcoder.com/spring-security-4-xml-config-in-memory-authentication-annotation-security-method 
-    <http auto-config="true">
-        <form-login />
-        <logout invalidate-session="true" />
-    </http>
+    <sec:http auto-config="true">
+        <sec:form-login />
+        <sec:logout invalidate-session="true" />
+    </sec:http>
     
-    <authentication-manager>
-        <authentication-provider>
-            <user-service>
-                <user name="admin" password="admin" authorities="ROLE_ADMIN" />
-                <user name="member" password="member" authorities="ROLE_MEMBER" />
-            </user-service>
-        </authentication-provider>
-    </authentication-manager> -->
+    <sec:authentication-manager>
+        <sec:authentication-provider>
+            <sec:user-service>
+                <sec:user name="admin" password="admin" authorities="ROLE_ADMIN" />
+                <sec:user name="member" password="member" authorities="ROLE_MEMBER" />
+            </sec:user-service>
+        </sec:authentication-provider>
+    </sec:authentication-manager> -->
 	
-	<global-method-security pre-post-annotations="enabled" />  
+	<sec:global-method-security pre-post-annotations="enabled" />  
     
-    <http pattern="/rest/login" security="none"/>   
-    <http pattern="/rest/signup" security="none"/>
+    <sec:http pattern="/rest/login" security="none"/>   
+    <sec:http pattern="/rest/signup" security="none"/>
 
-    <http  pattern="/rest/**" entry-point-ref="restAuthenticationEntryPoint" 
+    <sec:http  pattern="/rest/**" entry-point-ref="restAuthenticationEntryPoint" 
     	create-session="stateless"> 
-        <custom-filter before="FORM_LOGIN_FILTER" ref="appAuthenticationFilter"/>
-    </http>
+        <sec:custom-filter before="FORM_LOGIN_FILTER" ref="appAuthenticationFilter"/>
         
-    <authentication-manager alias="authenticationManager">
-        <authentication-provider ref="appAuthenticationProvider" /> 
-    </authentication-manager> 
-    
-    <beans:bean id="appAuthenticationProvider"
-            class="it.imperato.service.security.filter.AppAuthenticationProvider">
-    </beans:bean>
+        <sec:custom-filter before="FILTER_SECURITY_INTERCEPTOR" ref="myFilterSecurityInterceptor"/>
+    </sec:http>
     
     <beans:bean id="appAuthenticationSuccessHandler"
             class="it.imperato.service.security.filter.AppAuthenticationSuccessHandler">
@@ -49,7 +43,7 @@
     </beans:bean>
     
     <beans:bean id="appAuthenticationFilter" class="it.imperato.service.security.filter.AppAuthenticationFilter">  
-	     <beans:property name="authenticationManager" ref="authenticationManager" />
+	     <beans:property name="authenticationManager" ref="myAuthenticationManager" />
 	     <beans:property name="authenticationSuccessHandler" ref="appAuthenticationSuccessHandler" />  
 	</beans:bean>
 	
@@ -60,6 +54,69 @@
 		class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
 		<beans:constructor-arg name="strength" value="11" />
   	</beans:bean>
+  	
+  	<!-- ########################## -->
+  	<!-- security interceptor -->
+  	<beans:bean id="myFilterSecurityInterceptor" class="it.imperato.service.security.interceptor.MyFilterSecurityInterceptor">
+<!-- 		<beans:property name="securityMetadataSource" ref="securityMetadataSource" /> -->
+		<beans:property name="securityMetadataSource">
+	        <sec:filter-security-metadata-source request-matcher="ant" use-expressions="true">
+	            <sec:intercept-url pattern="/pages/Security/**" access="permitAll"/>
+	            <sec:intercept-url pattern="/resources/**" access="permitAll"/>
+	            <sec:intercept-url pattern="/pages/Settings/**" access="hasRole('SETTINGS')"/>
+	            <sec:intercept-url pattern="/pages/Home/*" access="hasRole('HOME')"/>              
+	            <sec:intercept-url pattern="/pages/Admin/**" access="hasRole('ADMINISTRATOR')"/>
+	            <sec:intercept-url pattern="/servlet/Download" access="hasAnyRole('DOWNLOAD','PREMIUM_ACCOUNT')"/>
+	            <sec:intercept-url pattern="/rest/**" access="isAuthenticated()"/>
+	        </sec:filter-security-metadata-source>
+	    </beans:property>
+		
+		<beans:property name="accessDecisionManager" ref="myAccessDecisionManagerBean" />
+		
+		<beans:property name="authenticationManager" ref="myAuthenticationManager" />
+	</beans:bean>
+	
+	<beans:bean id="securityMetadataSource" class="it.imperato.service.security.interceptor.MyInvocationSecurityMetadataSource" />
+	
+	<!-- ######################### -->
+	<!-- ACCESS DECISION MANAGER TYPE 1 -->
+<!-- 	<beans:bean id="myAccessDecisionManagerBean" class="it.imperato.service.security.interceptor.MyAccessDecisionManager" /> -->
+
+	<!-- ACCESS DECISION MANAGER TYPE 2 -->
+	<beans:bean id="myAccessDecisionManagerBean" class="org.springframework.security.access.vote.AffirmativeBased">
+	  	<beans:constructor-arg>
+	        <beans:list>
+	            <beans:bean class="org.springframework.security.web.access.expression.WebExpressionVoter" />
+	            <beans:bean class="org.springframework.security.access.vote.RoleVoter">
+	            	<!-- Customize the prefix-->
+					<beans:property name="rolePrefix" value="ROLE_"/>
+			    </beans:bean>
+	            <beans:bean class="org.springframework.security.access.vote.AuthenticatedVoter" />
+	        </beans:list>
+    	</beans:constructor-arg>
+	</beans:bean>
+		
+		
+	<!-- ######################### -->
+	<!-- AUTHENTICATION MANAGER TYPE 1 -->
+    <sec:authentication-manager alias="myAuthenticationManager">
+        <sec:authentication-provider ref="appAuthenticationProvider" /> 
+    </sec:authentication-manager> 
+    <beans:bean id="appAuthenticationProvider"
+            class="it.imperato.service.security.filter.AppAuthenticationProvider">
+    </beans:bean>
+	
+	<!-- AUTHENTICATION MANAGER TYPE 2 -->
+<!-- 	<sec:authentication-manager alias="myAuthenticationManager"> -->
+<!-- 		<sec:authentication-provider> -->
+<!-- 			<sec:user-service> -->
+<!-- 				<sec:user name="fdev" password="password" authorities="ROLE_USER_FRONTEND_DEVELOPER"/> -->
+<!-- 				<sec:user name="bdev" password="password" authorities="ROLE_USER_BACKEND_DEVELOPER"/> -->
+<!-- 				<sec:user name="tester" password="password" authorities="ROLE_USER_TESTER"/> -->
+<!-- 				<sec:user name="myuser" password="password" authorities="ROLE_USER"/> -->
+<!-- 			</sec:user-service> -->
+<!-- 		</sec:authentication-provider> -->
+<!-- 	</sec:authentication-manager> -->
 	
 	<!-- first: https://www.mkyong.com/spring-security/spring-security-hello-world-example/  -->
 </beans:beans>

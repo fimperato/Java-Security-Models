@@ -6,6 +6,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 //import org.apache.log4j.Logger;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -19,13 +21,14 @@ import org.springframework.stereotype.Component;
  */
 @Component("restAuthenticationEntryPoint")
 public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
-//	private static final Logger logger = Logger.getLogger(RestAuthenticationEntryPoint.class);
+	
+	private static final Logger log = LoggerFactory.getLogger(RestAuthenticationEntryPoint.class);
 	
 	@Override
 	public void commence(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
 			AuthenticationException authenticationException) throws IOException, ServletException {
 		
-//		logger.info("RestAuthenticationEntryPoint.commence()");
+		log.info("RestAuthenticationEntryPoint.commence()");
 		
 		httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
 

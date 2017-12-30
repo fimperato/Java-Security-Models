@@ -56,13 +56,18 @@ public class AppAuthenticationProvider extends AbstractUserDetailsAuthentication
         if (!usersAndPasswords.containsKey(username)) {
             throw new UsernameNotFoundException("User name not found : " + username);
         }
-
-        String password = authentication.getCredentials().toString();
-        String encodedPassword = usersAndPasswords.get(username);
-        if (!passwordEncoder.matches(password, encodedPassword)) {
-            throw new BadCredentialsException("Wrong password");
+        User user = null;
+        if(authentication.getPrincipal() instanceof User) {
+        	user = (User) authentication.getPrincipal();
+        } else {
+	        String password = authentication.getCredentials().toString();
+	        String encodedPassword = usersAndPasswords.get(username);
+	        if (!passwordEncoder.matches(password, encodedPassword)) {
+	            throw new BadCredentialsException("Wrong password");
+	        }
+	        user = new User(username, password, createAuthorities("role1", "role2")); 
         }
-        return new User(username, password, createAuthorities("role1", "role2"));            
+        return user;
     }
 
     private Collection<? extends GrantedAuthority> createAuthorities(String... roles) {
