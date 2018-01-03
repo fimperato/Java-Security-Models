@@ -11,8 +11,9 @@
     <url>http://maven.apache.org</url>
  
 	 <modules>
-	  	<module>SpringCustomAuthFilter</module>
 	  	<module>SpringLoginForm</module>
+	  	<module>SpringCustomAuthFilter</module>
+	  	<module>SpringBootJwt</module>
 	 </modules>
   
     <properties>
