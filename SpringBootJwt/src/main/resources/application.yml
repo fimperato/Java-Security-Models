@@ -1,13 +1,16 @@
 app:
   name: springboot-jwt
 
+server:
+  port: 8081
+  
 jwt:
   header: Authorization
-  expires_in: 600 # 10 minutes
+  expires_in: 1200 # 20 minutes
   secret: mariorossi
   cookie: AUTH-TOKEN
 
 logging:
   level:
     org.springframework.web: ERROR
-    it.imperato: DEBUG
+    it.imperato.service.security: DEBUG
