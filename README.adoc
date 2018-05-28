@@ -4,7 +4,7 @@
 
 * Spring Custom Auth Filter
 
-* Spring Custom Auth Filter
+* Spring Boot JWT
 
 
 ==== To test Java Security Models add this repo:
