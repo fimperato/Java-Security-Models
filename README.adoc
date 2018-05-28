@@ -1,0 +1,14 @@
+# Java Security Models
+
+* Spring Login Form
+
+* Spring Custom Auth Filter
+
+* Spring Custom Auth Filter
+
+
+==== To test Java Security Models add this repo:
+[indent=0]
+----
+  git remote add origin https://github.com/fimperato/SecurityWays.git
+----
